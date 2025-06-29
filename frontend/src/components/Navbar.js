@@ -1,8 +1,17 @@
 // src/components/Navbar.js
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function Navbar() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user_id");
+    navigate("/login");
+    window.location.reload(); // Optional: force re-render to update auth state
+  };
+
   return (
     <nav className="navbar navbar-expand navbar-dark" style={{ backgroundColor: "#228B22" }}>
       <div className="container-fluid">
@@ -12,6 +21,9 @@ function Navbar() {
           <Link className="nav-link" to="/create-club">Create Club</Link>
           <Link className="nav-link" to="/create-event">Create Event</Link>
           <Link className="nav-link" to="/profile">Profile</Link>
+          <button className="nav-link btn btn-link" style={{ color: "#fff", textDecoration: "none" }} onClick={handleLogout}>
+            Logout
+          </button>
         </div>
       </div>
     </nav>

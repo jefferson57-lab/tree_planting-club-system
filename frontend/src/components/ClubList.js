@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchClubs } from '../api';
 import { Link } from 'react-router-dom';
-import CreateClub from './forms/CreateClub';
 
 function ClubList() {
   const [clubs, setClubs] = useState([]);
@@ -18,7 +17,6 @@ function ClubList() {
   return (
     <div className="container">
       <h2 className="mb-4">All Tree Planting Clubs</h2>
-      <CreateClub onClubCreated={loadClubs} />
       <ul className="list-group mt-4">
         {clubs.map(club => (
           <li key={club.id} className="list-group-item">

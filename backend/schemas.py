@@ -20,7 +20,8 @@ class MembershipSchema(ma.SQLAlchemySchema):
     club_id = ma.auto_field()
     role = ma.auto_field()
     joined_at = ma.auto_field()
-    user = ma.Nested(UserSchema)  # Add this line
+    user = ma.Nested(UserSchema)
+    club = ma.Nested(ClubSchema, only=("id", "name"))  # <-- Add this line
 
 class EventSchema(ma.SQLAlchemySchema):
     class Meta:

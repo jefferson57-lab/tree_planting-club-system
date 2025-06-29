@@ -17,3 +17,10 @@ def create_membership():
 @memberships_bp.route('/', methods=['GET'])
 def list_memberships():
     return memberships_schema.jsonify(Membership.query.all())
+
+@memberships_bp.route('/<int:id>', methods=['DELETE'])
+def delete_membership(id):
+    membership = Membership.query.get_or_404(id)
+    db.session.delete(membership)
+    db.session.commit()
+    return '', 204

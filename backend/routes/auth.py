@@ -28,3 +28,25 @@ def login():
         access_token = create_access_token(identity=user.id)
         return jsonify({'access_token': access_token, 'user_id': user.id}), 200
     return jsonify({'error': 'Invalid credentials'}), 401
+
+@auth_bp.route('/users/<int:id>', methods=['GET'])
+def get_user(id):
+    user = User.query.get_or_404(id)
+    return jsonify({
+        "id": user.id,
+        "username": user.username,
+        "email": user.email
+    })
+
+@auth_bp.route('/users/<int:id>', methods=['PUT'])
+def update_user(id):
+    user = User.query.get_or_404(id)
+    data = request.json
+    user.username = data.get('username', user.username)
+    user.email = data.get('email', user.email)
+    db.session.commit()
+    return jsonify({
+        "id": user.id,
+        "username": user.username,
+        "email": user.email
+    })

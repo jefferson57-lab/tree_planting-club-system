@@ -1,6 +1,6 @@
 // src/components/EventDetails.js
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 
@@ -13,11 +13,22 @@ function EventDetails() {
   const { id } = useParams();
   const [event, setEvent] = useState(null);
   const [reviews, setReviews] = useState([]);
+  const [editing, setEditing] = useState(false);
+  const [editValues, setEditValues] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch(`/api/events/${id}`)
       .then((res) => res.json())
-      .then(setEvent);
+      .then((ev) => {
+        setEvent(ev);
+        setEditValues({
+          name: ev.name,
+          description: ev.description,
+          date: ev.date ? ev.date.slice(0, 10) : "",
+          trees_planted: ev.trees_planted,
+        });
+      });
 
     fetch("/api/reviews")
       .then((res) => res.json())
@@ -26,6 +37,24 @@ function EventDetails() {
         setReviews(filtered);
       });
   }, [id]);
+
+  const handleEditChange = (e) => {
+    setEditValues({ ...editValues, [e.target.name]: e.target.value });
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    await fetch(`/api/events/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(editValues),
+    });
+    setEditing(false);
+    // reload event
+    fetch(`/api/events/${id}`)
+      .then((res) => res.json())
+      .then(setEvent);
+  };
 
   const handleSubmitReview = (values, { resetForm }) => {
     fetch("/api/reviews", {
@@ -40,14 +69,73 @@ function EventDetails() {
       });
   };
 
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this event?")) {
+      await fetch(`/api/events/${id}`, { method: "DELETE" });
+      navigate("/clubs");
+    }
+  };
+
   if (!event) return <p>Loading...</p>;
 
   return (
     <div>
-      <h2>{event.name}</h2>
-      <p>{event.description}</p>
-      <p>Date: {event.date}</p>
-      <p>Trees planted: {event.trees_planted}</p>
+      {editing ? (
+        <form onSubmit={handleEditSubmit}>
+          <input
+            name="name"
+            value={editValues.name}
+            onChange={handleEditChange}
+            className="form-control mb-2"
+            placeholder="Name"
+          />
+          <textarea
+            name="description"
+            value={editValues.description}
+            onChange={handleEditChange}
+            className="form-control mb-2"
+            placeholder="Description"
+          />
+          <input
+            name="date"
+            type="date"
+            value={editValues.date}
+            onChange={handleEditChange}
+            className="form-control mb-2"
+          />
+          <input
+            name="trees_planted"
+            type="number"
+            value={editValues.trees_planted}
+            onChange={handleEditChange}
+            className="form-control mb-2"
+            placeholder="Trees Planted"
+          />
+          <button type="submit" className="btn btn-success btn-sm me-2">
+            Save
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => setEditing(false)}
+          >
+            Cancel
+          </button>
+        </form>
+      ) : (
+        <>
+          <h2>{event.name}</h2>
+          <p>{event.description}</p>
+          <p>Date: {event.date}</p>
+          <p>Trees planted: {event.trees_planted}</p>
+          <button
+            className="btn btn-primary btn-sm me-2"
+            onClick={() => setEditing(true)}
+          >
+            Edit Event
+          </button>
+        </>
+      )}
 
       <h3>Reviews</h3>
       <ul>
@@ -83,6 +171,10 @@ function EventDetails() {
           <button type="submit">Submit Review</button>
         </Form>
       </Formik>
+
+      <button className="btn btn-danger mb-3" onClick={handleDelete}>
+        Delete Event
+      </button>
     </div>
   );
 }
