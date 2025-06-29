@@ -3,3 +3,6 @@ Flask-SQLAlchemy
 Flask-Marshmallow
 marshmallow-sqlalchemy
 Flask-Migrate
+Flask-Cors
+flask-jwt-extended
+werkzeug
