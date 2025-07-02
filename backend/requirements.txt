@@ -6,3 +6,5 @@ Flask-Migrate
 Flask-Cors
 flask-jwt-extended
 werkzeug
+psycopg2-binary
+python-dotenv
