@@ -38,4 +38,4 @@ export async function createReview(data) {
   return res.json();
 }
 
-export { authHeaders };
+export { authHeaders, API_BASE };
