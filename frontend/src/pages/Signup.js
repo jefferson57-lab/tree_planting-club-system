@@ -1,29 +1,34 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
+import { API_BASE } from "../api"; // <-- Add this import
 
-function Signup() {
+function Login({ setAuth }) {
   const navigate = useNavigate();
 
   return (
     <div className="container mt-5" style={{ maxWidth: 400 }}>
       <div className="card shadow">
         <div className="card-body">
-          <h2 className="mb-4 text-center">Sign Up</h2>
+          <h2 className="mb-4 text-center">Login</h2>
           <Formik
-            initialValues={{ username: "", email: "", password: "", role: "user" }}
+            initialValues={{ email: "", password: "", role: "user" }}
             onSubmit={(values, { setSubmitting, setErrors }) => {
-              fetch("/api/auth/signup", {
+              fetch(`${API_BASE}/auth/login`, { // <-- Use API_BASE
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(values),
+                body: JSON.stringify({ email: values.email, password: values.password }),
               })
                 .then((res) => res.json().then((data) => ({ status: res.status, data })))
                 .then(({ status, data }) => {
-                  if (status === 201) {
-                    navigate("/login");
+                  if (status === 200) {
+                    localStorage.setItem("token", data.access_token);
+                    localStorage.setItem("user_id", data.user_id);
+                    localStorage.setItem("role", data.role); // Store role from backend
+                    setAuth(true);
+                    navigate("/clubs");
                   } else {
-                    setErrors({ email: data.error || "Signup failed" });
+                    setErrors({ email: "Invalid credentials" });
                   }
                 })
                 .finally(() => setSubmitting(false));
@@ -31,12 +36,6 @@ function Signup() {
           >
             {({ isSubmitting }) => (
               <Form>
-                <div className="mb-3">
-                  <label className="form-label">Username</label>
-                  <Field name="username" className="form-control" />
-                  <ErrorMessage name="username" component="div" className="text-danger" />
-                </div>
-
                 <div className="mb-3">
                   <label className="form-label">Email</label>
                   <Field name="email" type="email" className="form-control" />
@@ -49,22 +48,14 @@ function Signup() {
                   <ErrorMessage name="password" component="div" className="text-danger" />
                 </div>
 
-                <div className="mb-3">
-                  <label className="form-label">Sign up as</label>
-                  <Field as="select" name="role" className="form-select">
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
-                  </Field>
-                </div>
-
                 <button type="submit" className="btn btn-success w-100" disabled={isSubmitting}>
-                  Sign Up
+                  Login
                 </button>
               </Form>
             )}
           </Formik>
           <p className="mt-3 text-center">
-            Already have an account? <a href="/login">Login</a>
+            Don't have an account? <a href="/signup">Sign up</a>
           </p>
         </div>
       </div>
@@ -72,4 +63,4 @@ function Signup() {
   );
 }
 
-export default Signup;
+export default Login;
