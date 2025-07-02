@@ -11,6 +11,8 @@ function ClubDetails() {
   const [editValues, setEditValues] = useState({});
   const navigate = useNavigate();
 
+  const isAdmin = localStorage.getItem("role") === "admin";
+
   const loadClub = () => {
     fetchClub(id).then(club => {
       setClub(club);
@@ -48,11 +50,11 @@ function ClubDetails() {
     }
   };
 
-  if (!club) return <p>Loading...</p>;
+  if (!club) return <div className="container mt-4"><div className="alert alert-info">Loading...</div></div>;
 
   return (
-    <div className="container">
-      <div className="card mb-4">
+    <div className="container mt-4">
+      <div className="card mb-4 shadow">
         <div className="card-body">
           {editing ? (
             <form onSubmit={handleEditSubmit}>
@@ -77,76 +79,94 @@ function ClubDetails() {
                 className="form-control mb-2"
                 placeholder="Location"
               />
-              <button type="submit" className="btn btn-success btn-sm me-2">Save</button>
+              {isAdmin && (
+                <button type="submit" className="btn btn-success btn-sm me-2">Save</button>
+              )}
               <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditing(false)}>Cancel</button>
             </form>
           ) : (
             <>
               <h2 className="card-title">{club.name}</h2>
               <p className="card-text">{club.description}</p>
-              <p><strong>Location:</strong> {club.location}</p>
-              <button className="btn btn-primary btn-sm me-2" onClick={() => setEditing(true)}>Edit Club</button>
+              <span className="badge bg-success mb-2">{club.location}</span>
+              {isAdmin && (
+                <button className="btn btn-primary btn-sm me-2" onClick={() => setEditing(true)}>Edit Club</button>
+              )}
             </>
           )}
         </div>
       </div>
 
-      <h3>Members</h3>
-      <ul className="list-group mb-4">
-        {club.memberships && club.memberships.length > 0 ? (
-          club.memberships.map(m => (
-            <li key={m.id} className="list-group-item d-flex justify-content-between align-items-center">
-              {m.user ? m.user.username : `User ${m.user_id}`} ({m.role})
-              <button
-                className="btn btn-danger btn-sm"
-                onClick={async () => {
-                  if (window.confirm("Remove this member?")) {
-                    await fetch(`/api/memberships/${m.id}`, { method: "DELETE" });
-                    loadClub();
-                  }
-                }}
-              >
-                Remove
-              </button>
-            </li>
-          ))
-        ) : (
-          <li className="list-group-item">No members yet.</li>
-        )}
-      </ul>
+      <div className="mb-4">
+        <h3>Members</h3>
+        <ul className="list-group">
+          {club.memberships && club.memberships.length > 0 ? (
+            club.memberships.map(m => (
+              <li key={m.id} className="list-group-item d-flex justify-content-between align-items-center">
+                <span>
+                  {m.user ? m.user.username : `User ${m.user_id}`} <span className="badge bg-secondary ms-2">{m.role}</span>
+                </span>
+                {isAdmin && (
+                  <button
+                    className="btn btn-danger btn-sm"
+                    onClick={async () => {
+                      if (window.confirm("Remove this member?")) {
+                        await fetch(`/api/memberships/${m.id}`, { method: "DELETE" });
+                        loadClub();
+                      }
+                    }}
+                  >
+                    Remove
+                  </button>
+                )}
+              </li>
+            ))
+          ) : (
+            <li className="list-group-item text-muted">No members yet.</li>
+          )}
+        </ul>
+      </div>
 
-      <h3>Events</h3>
-      <ul className="list-group mb-4">
-        {club.events && club.events.length > 0 ? (
-          club.events.map(event => (
-            <li key={event.id} className="list-group-item d-flex justify-content-between align-items-center">
-              <Link to={`/events/${event.id}`}>
-                {event.name} – {new Date(event.date).toLocaleDateString()}
-              </Link>
-              <button
-                className="btn btn-danger btn-sm"
-                onClick={async () => {
-                  if (window.confirm("Delete this event?")) {
-                    await fetch(`/api/events/${event.id}`, { method: "DELETE" });
-                    loadClub();
-                  }
-                }}
-              >
-                Delete
-              </button>
-            </li>
-          ))
-        ) : (
-          <li className="list-group-item">No events yet.</li>
-        )}
-      </ul>
+      <div className="mb-4">
+        <h3>Events</h3>
+        <ul className="list-group">
+          {club.events && club.events.length > 0 ? (
+            club.events.map(event => (
+              <li key={event.id} className="list-group-item d-flex justify-content-between align-items-center">
+                <Link to={`/events/${event.id}`}>
+                  {event.name} – {new Date(event.date).toLocaleDateString()}
+                </Link>
+                {isAdmin && (
+                  <button
+                    className="btn btn-danger btn-sm"
+                    onClick={async () => {
+                      if (window.confirm("Delete this event?")) {
+                        await fetch(`/api/events/${event.id}`, { method: "DELETE" });
+                        loadClub();
+                      }
+                    }}
+                  >
+                    Delete
+                  </button>
+                )}
+              </li>
+            ))
+          ) : (
+            <li className="list-group-item text-muted">No events yet.</li>
+          )}
+        </ul>
+      </div>
 
-      <h3>Join This Club</h3>
-      <MembershipForm clubId={club.id} onMembershipCreated={loadClub} />
+      <div className="mb-4">
+        <h3>Join This Club</h3>
+        <MembershipForm clubId={club.id} onMembershipCreated={loadClub} />
+      </div>
 
-      <button className="btn btn-danger mb-3" onClick={handleDelete}>
-        Delete Club
-      </button>
+      {isAdmin && (
+        <button className="btn btn-danger mb-3" onClick={handleDelete}>
+          Delete Club
+        </button>
+      )}
     </div>
   );
 }

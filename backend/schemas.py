@@ -10,19 +10,6 @@ class UserSchema(ma.SQLAlchemySchema):
     username = ma.auto_field()
     email = ma.auto_field()
 
-class MembershipSchema(ma.SQLAlchemySchema):
-    class Meta:
-        model = Membership
-        load_instance = True
-
-    id = ma.auto_field()
-    user_id = ma.auto_field()
-    club_id = ma.auto_field()
-    role = ma.auto_field()
-    joined_at = ma.auto_field()
-    user = ma.Nested(UserSchema)
-    club = ma.Nested(ClubSchema, only=("id", "name"))  # <-- Add this line
-
 class EventSchema(ma.SQLAlchemySchema):
     class Meta:
         model = Event
@@ -46,7 +33,20 @@ class ClubSchema(ma.SQLAlchemySchema):
     location = ma.auto_field()
     owner_id = ma.auto_field()
     events = ma.Nested(EventSchema, many=True)
-    memberships = ma.Nested(MembershipSchema, many=True)
+    memberships = ma.Nested(lambda: MembershipSchema, many=True)
+
+class MembershipSchema(ma.SQLAlchemySchema):
+    class Meta:
+        model = Membership
+        load_instance = True
+
+    id = ma.auto_field()
+    user_id = ma.auto_field()
+    club_id = ma.auto_field()
+    role = ma.auto_field()
+    joined_at = ma.auto_field()
+    user = ma.Nested(UserSchema)
+    club = ma.Nested(ClubSchema, only=("id", "name"))
 
 class EventReviewSchema(ma.SQLAlchemySchema):
     class Meta:

@@ -37,3 +37,5 @@ export async function createReview(data) {
   });
   return res.json();
 }
+
+export { authHeaders };

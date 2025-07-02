@@ -11,10 +11,13 @@ def signup():
     data = request.json
     if User.query.filter_by(email=data['email']).first():
         return jsonify({'error': 'Email already exists'}), 400
+    # Ensure role is always set to 'user' if missing or empty
+    role = data.get('role') or 'user'
     user = User(
         username=data['username'],
         email=data['email'],
-        password=generate_password_hash(data['password'])
+        password=generate_password_hash(data['password']),
+        role=role
     )
     db.session.add(user)
     db.session.commit()
@@ -26,7 +29,7 @@ def login():
     user = User.query.filter_by(email=data['email']).first()
     if user and check_password_hash(user.password, data['password']):
         access_token = create_access_token(identity=user.id)
-        return jsonify({'access_token': access_token, 'user_id': user.id}), 200
+        return jsonify({'access_token': access_token, 'user_id': user.id, 'role': user.role}), 200
     return jsonify({'error': 'Invalid credentials'}), 401
 
 @auth_bp.route('/users/<int:id>', methods=['GET'])
@@ -35,7 +38,8 @@ def get_user(id):
     return jsonify({
         "id": user.id,
         "username": user.username,
-        "email": user.email
+        "email": user.email,
+        "role": user.role
     })
 
 @auth_bp.route('/users/<int:id>', methods=['PUT'])
@@ -48,5 +52,6 @@ def update_user(id):
     return jsonify({
         "id": user.id,
         "username": user.username,
-        "email": user.email
+        "email": user.email,
+        "role": user.role
     })

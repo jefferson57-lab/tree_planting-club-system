@@ -1,6 +1,7 @@
 import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { authHeaders } from "../../api"; // add this import
 
 const schema = Yup.object({
   name: Yup.string().required("Name is required"),
@@ -23,7 +24,7 @@ function CreateClub({ onClubCreated }) {
           const owner_id = localStorage.getItem("user_id");
           fetch("/api/clubs/", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...authHeaders() }, // use authHeaders
             body: JSON.stringify({ ...values, owner_id: Number(owner_id) }),
           })
             .then((res) => res.json())

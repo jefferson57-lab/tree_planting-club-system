@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { authHeaders } from "../../api";
 
 const schema = Yup.object({
   name: Yup.string().required("Name is required"),
@@ -43,7 +44,7 @@ function CreateEvent({ onEventCreated }) {
           };
           fetch("/api/events", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...authHeaders() },
             body: JSON.stringify(payload),
           })
             .then((res) => res.json())

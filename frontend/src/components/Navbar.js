@@ -8,8 +8,9 @@ function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user_id");
+    localStorage.removeItem("role");
     navigate("/login");
-    window.location.reload(); // Optional: force re-render to update auth state
+    window.location.reload();
   };
 
   return (

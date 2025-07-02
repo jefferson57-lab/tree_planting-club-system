@@ -9,7 +9,7 @@ with app.app_context():
     db.drop_all()
     db.create_all()
 
-    user = User(username="admin", email="admin@example.com", password=generate_password_hash("password"))
+    user = User(username="admin", email="admin@example.com", password=generate_password_hash("password"), role="admin")
     db.session.add(user)
     db.session.commit()
 

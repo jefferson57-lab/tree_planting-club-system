@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { fetchClub } from '../api';
 import MembershipForm from '../components/MembershipForm';
 
@@ -11,27 +11,35 @@ function ClubPage() {
     fetchClub(id).then(setClub);
   }, [id]);
 
-  if (!club) return <p>Loading...</p>;
+  if (!club) return <div className="container mt-4"><div className="alert alert-info">Loading...</div></div>;
 
   return (
-    <div style={{ padding: '1rem' }}>
-      <h2>{club.name}</h2>
-      <p>{club.description}</p>
-      <p><strong>Location:</strong> {club.location}</p>
+    <div className="container mt-4">
+      <div className="card mb-4 shadow">
+        <div className="card-body">
+          <h2 className="card-title">{club.name}</h2>
+          <p className="card-text">{club.description}</p>
+          <span className="badge bg-success mb-2">{club.location}</span>
+        </div>
+      </div>
 
-      <h3>Events</h3>
-      <ul>
-        {club.events.map(event => (
-          <li key={event.id}>
-            <a href={`/events/${event.id}`}>
-              {event.name} — {new Date(event.date).toLocaleDateString()}
-            </a>
-          </li>
-        ))}
-      </ul>
+      <div className="mb-4">
+        <h3>Events</h3>
+        <ul className="list-group">
+          {club.events.map(event => (
+            <li key={event.id} className="list-group-item">
+              <Link to={`/events/${event.id}`}>
+                {event.name} — {new Date(event.date).toLocaleDateString()}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
 
-      <h3>Join Club</h3>
-      <MembershipForm clubId={club.id} />
+      <div className="mb-4">
+        <h3>Join Club</h3>
+        <MembershipForm clubId={club.id} />
+      </div>
     </div>
   );
 }

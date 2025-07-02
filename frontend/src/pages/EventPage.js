@@ -11,30 +11,38 @@ function EventPage() {
     fetchEvent(id).then(setEvent);
   }, [id]);
 
-  if (!event) return <p>Loading event...</p>;
+  if (!event) return <div className="container mt-4"><div className="alert alert-info">Loading event...</div></div>;
 
   return (
-    <div style={{ padding: '1rem' }}>
-      <h2>{event.name}</h2>
-      <p>{event.description}</p>
-      <p><strong>Date:</strong> {new Date(event.date).toLocaleDateString()}</p>
-      <p><strong>Trees Planted:</strong> {event.trees_planted}</p>
+    <div className="container mt-4">
+      <div className="card mb-4 shadow">
+        <div className="card-body">
+          <h2 className="card-title">{event.name}</h2>
+          <p className="card-text">{event.description}</p>
+          <span className="badge bg-info mb-2">Date: {new Date(event.date).toLocaleDateString()}</span>
+          <span className="badge bg-success ms-2 mb-2">Trees Planted: {event.trees_planted}</span>
+        </div>
+      </div>
 
-      <h3>Reviews</h3>
-      {event.reviews.length === 0 ? (
-        <p>No reviews yet.</p>
-      ) : (
-        <ul>
-          {event.reviews.map(review => (
-            <li key={review.id}>
-              ⭐ {review.rating} — {review.comment} (User {review.user_id})
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className="mb-4">
+        <h3>Reviews</h3>
+        {event.reviews.length === 0 ? (
+          <div className="alert alert-secondary">No reviews yet.</div>
+        ) : (
+          <ul className="list-group">
+            {event.reviews.map(review => (
+              <li key={review.id} className="list-group-item">
+                ⭐ {review.rating} — {review.comment} (User {review.user_id})
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
-      <h3>Leave a Review</h3>
-      <ReviewForm eventId={event.id} />
+      <div className="mb-4">
+        <h3>Leave a Review</h3>
+        <ReviewForm eventId={event.id} />
+      </div>
     </div>
   );
 }

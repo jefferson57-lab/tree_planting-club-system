@@ -17,6 +17,8 @@ function EventDetails() {
   const [editValues, setEditValues] = useState({});
   const navigate = useNavigate();
 
+  const isAdmin = localStorage.getItem("role") === "admin";
+
   useEffect(() => {
     fetch(`/api/events/${id}`)
       .then((res) => res.json())
@@ -76,105 +78,126 @@ function EventDetails() {
     }
   };
 
-  if (!event) return <p>Loading...</p>;
+  if (!event) return <div className="container mt-4"><div className="alert alert-info">Loading...</div></div>;
 
   return (
-    <div>
-      {editing ? (
-        <form onSubmit={handleEditSubmit}>
-          <input
-            name="name"
-            value={editValues.name}
-            onChange={handleEditChange}
-            className="form-control mb-2"
-            placeholder="Name"
-          />
-          <textarea
-            name="description"
-            value={editValues.description}
-            onChange={handleEditChange}
-            className="form-control mb-2"
-            placeholder="Description"
-          />
-          <input
-            name="date"
-            type="date"
-            value={editValues.date}
-            onChange={handleEditChange}
-            className="form-control mb-2"
-          />
-          <input
-            name="trees_planted"
-            type="number"
-            value={editValues.trees_planted}
-            onChange={handleEditChange}
-            className="form-control mb-2"
-            placeholder="Trees Planted"
-          />
-          <button type="submit" className="btn btn-success btn-sm me-2">
-            Save
-          </button>
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => setEditing(false)}
-          >
-            Cancel
-          </button>
-        </form>
-      ) : (
-        <>
-          <h2>{event.name}</h2>
-          <p>{event.description}</p>
-          <p>Date: {event.date}</p>
-          <p>Trees planted: {event.trees_planted}</p>
-          <button
-            className="btn btn-primary btn-sm me-2"
-            onClick={() => setEditing(true)}
-          >
-            Edit Event
-          </button>
-        </>
+    <div className="container mt-4">
+      <div className="card mb-4 shadow">
+        <div className="card-body">
+          {editing ? (
+            <form onSubmit={handleEditSubmit}>
+              <input
+                name="name"
+                value={editValues.name}
+                onChange={handleEditChange}
+                className="form-control mb-2"
+                placeholder="Name"
+              />
+              <textarea
+                name="description"
+                value={editValues.description}
+                onChange={handleEditChange}
+                className="form-control mb-2"
+                placeholder="Description"
+              />
+              <input
+                name="date"
+                type="date"
+                value={editValues.date}
+                onChange={handleEditChange}
+                className="form-control mb-2"
+              />
+              <input
+                name="trees_planted"
+                type="number"
+                value={editValues.trees_planted}
+                onChange={handleEditChange}
+                className="form-control mb-2"
+                placeholder="Trees Planted"
+              />
+              {isAdmin && (
+                <button type="submit" className="btn btn-success btn-sm me-2">
+                  Save
+                </button>
+              )}
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => setEditing(false)}
+              >
+                Cancel
+              </button>
+            </form>
+          ) : (
+            <>
+              <h2 className="card-title">{event.name}</h2>
+              <p className="card-text">{event.description}</p>
+              <span className="badge bg-info mb-2">Date: {event.date}</span>
+              <span className="badge bg-success ms-2 mb-2">Trees planted: {event.trees_planted}</span>
+              {isAdmin && (
+                <button
+                  className="btn btn-primary btn-sm me-2"
+                  onClick={() => setEditing(true)}
+                >
+                  Edit Event
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <h3>Reviews</h3>
+        <ul className="list-group">
+          {reviews.length === 0 ? (
+            <li className="list-group-item text-muted">No reviews yet.</li>
+          ) : (
+            reviews.map((r) => (
+              <li key={r.id} className="list-group-item">
+                <span className="me-2">⭐ {r.rating}</span>
+                {r.comment}
+              </li>
+            ))
+          )}
+        </ul>
+      </div>
+
+      <div className="mb-4">
+        <h4>Leave a Review</h4>
+        <Formik
+          initialValues={{ rating: "", comment: "" }}
+          validationSchema={reviewSchema}
+          onSubmit={handleSubmitReview}
+        >
+          <Form>
+            <div className="mb-2">
+              <label className="form-label">Rating</label>
+              <Field as="select" name="rating" className="form-select">
+                <option value="">Select</option>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </Field>
+              <ErrorMessage name="rating" component="div" className="text-danger" />
+            </div>
+            <div className="mb-2">
+              <label className="form-label">Comment</label>
+              <Field name="comment" className="form-control" />
+              <ErrorMessage name="comment" component="div" className="text-danger" />
+            </div>
+            <button type="submit" className="btn btn-success btn-sm">Submit Review</button>
+          </Form>
+        </Formik>
+      </div>
+
+      {isAdmin && (
+        <button className="btn btn-danger mb-3" onClick={handleDelete}>
+          Delete Event
+        </button>
       )}
-
-      <h3>Reviews</h3>
-      <ul>
-        {reviews.map((r) => (
-          <li key={r.id}>
-            ⭐ {r.rating} - {r.comment}
-          </li>
-        ))}
-      </ul>
-
-      <h4>Leave a Review</h4>
-      <Formik
-        initialValues={{ rating: "", comment: "" }}
-        validationSchema={reviewSchema}
-        onSubmit={handleSubmitReview}
-      >
-        <Form>
-          <label>Rating</label>
-          <Field as="select" name="rating">
-            <option value="">Select</option>
-            {[1, 2, 3, 4, 5].map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </Field>
-          <ErrorMessage name="rating" component="div" />
-
-          <label>Comment</label>
-          <Field name="comment" />
-          <ErrorMessage name="comment" component="div" />
-
-          <button type="submit">Submit Review</button>
-        </Form>
-      </Formik>
-
-      <button className="btn btn-danger mb-3" onClick={handleDelete}>
-        Delete Event
-      </button>
     </div>
   );
 }
